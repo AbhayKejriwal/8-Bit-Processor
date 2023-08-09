@@ -1,0 +1,41 @@
+module Basic8BitProcessorTestbench;
+  reg clk;
+  reg rst;
+  reg [7:0] instruction;
+  wire [7:0] acc;
+
+  Basic8BitProcessor dut (
+    .clk(clk),
+    .rst(rst),
+    .instruction(instruction),
+    .acc(acc)
+  );
+
+  initial begin
+    clk = 0;
+    rst = 0;
+    instruction = 8'b0;
+    
+    #20; rst = 1; // Assert reset
+    #20; rst = 0; // Deassert reset
+
+    // Load Immediate 1 (LDI 1) to Accumulator
+    #30; instruction = 8'b11000001; // Opcode: 1100, Immediate: 1
+
+    // Store Accumulator Value (ST 1) to Memory Address 0001
+    #50; instruction = 8'b11100001; // Opcode: 111x, Direct: 1
+   
+    // Load Immediate 5 (LDI 5) to Accumulator
+    #50; instruction = 8'b11000101; // Opcode: 1100, Immediate: 5
+
+    // Add Immediate 2 (ADDI 2) to Accumulator
+    #50; instruction = 8'b00000010; // Opcode: 0000, Immediate: 2
+
+    // Sub Direct 1 (Memory Address 0001 : Data 0003) (SUBD 1) to Accumulator
+    #50; instruction = 8'b00110001; // Opcode: 0011, Immediate: 1
+
+    // To run the final instruction
+    #20;  
+  end
+  always #25 clk = ~clk; // clock cycle is 50
+endmodule 

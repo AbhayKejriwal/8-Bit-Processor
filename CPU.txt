@@ -1,0 +1,52 @@
+module ALU (
+  input wire [7:0] operandA,
+  input wire [7:0] operandB,
+  input wire [2:0] operation,
+  output wire [7:0] result
+);
+  assign result = (operation == 3'b000) ? operandA + operandB :       // ADD
+                  (operation == 3'b001) ? operandA - operandB :       // SUB
+                  (operation == 3'b010) ? operandA & operandB :       // AND
+                  (operation == 3'b011) ? operandA | operandB :       // OR
+                  (operation == 3'b100) ? operandA ^ operandB :       // XOR
+                  (operation == 3'b101) ? ~operandA :                 // NOT
+                  (operation == 3'b110) ? operandB :                  // Pass B
+                  (operation == 3'b111) ? operandB :                  // Pass B
+                  8'b0;
+endmodule
+
+module Basic8BitProcessor(
+  input wire clk,
+  input wire rst,
+  input wire [7:0] instruction,
+  output reg [7:0] acc
+);
+  
+  reg [7:0] accumulator;
+  wire [7:0] aluResult;
+  reg [7:0] memory [15:0];
+
+  ALU alu_inst (
+    .operandA(accumulator),
+    .operandB(instruction[4] == 1'b0 ? instruction[3:0] : memory[instruction[3:0]]), // 0 for immediate addressing & 1 for direct[from memory]
+    .operation(instruction[7:5]),
+    .result(aluResult)
+  );
+
+  always @(posedge clk) begin
+    if (rst) begin
+      accumulator <= 8'b0;
+    end 
+    else begin
+	if (instruction[7:5] == 3'b111)  begin // Store (ST)
+            memory[instruction[3:0]] <= accumulator;
+        end
+          else begin
+            accumulator <= aluResult;
+          end
+          
+     end
+	assign acc = accumulator;
+  end
+
+endmodule
